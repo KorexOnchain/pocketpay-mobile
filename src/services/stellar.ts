@@ -117,6 +117,21 @@ export const sendXlmTransaction = async (
 };
 
 /**
+ * Fund a Testnet account using Friendbot.
+ * This is Testnet-only; Friendbot does not exist on Mainnet / Futurenet.
+ */
+export const fundWithFriendbot = async (publicKey: string): Promise<void> => {
+  const friendbotUrl = 'https://friendbot.stellar.org';
+  const response = await fetch(`${friendbotUrl}?addr=${encodeURIComponent(publicKey)}`);
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    const detail = (body as any)?.detail || `Friendbot request failed (HTTP ${response.status})`;
+    throw new Error(detail);
+  }
+};
+
+/**
  * MOCK SERVICE WRAPPERS FOR SOROBAN SAVINGS VAULT (Placeholder)
  * 
  * NOTE: Soroban smart contract interactions require specific contract bindings

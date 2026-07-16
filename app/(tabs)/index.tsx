@@ -4,16 +4,27 @@ import { useRouter } from 'expo-router';
 import { useWalletStore } from '../../src/store/walletStore';
 import { COLORS, SIZES, RADIUS } from '../../src/constants/theme';
 import { Button } from '../../src/components/Button';
+import { FundButton } from '../../src/components/FundButton';
 import { ArrowUpRight, ArrowDownLeft, Clock } from 'lucide-react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { publicKey, balance, transactions, isLoading, refreshWalletData } = useWalletStore();
+  const {
+    publicKey,
+    balance,
+    transactions,
+    isLoading,
+    isFunding,
+    fundError,
+    refreshWalletData,
+    fundWallet,
+  } = useWalletStore();
 
   useEffect(() => {
     refreshWalletData();
   }, []);
 
+  const isFunded = balance !== '0.0000000';
   const recentTransactions = transactions.slice(0, 3); // Preview
 
   return (
@@ -34,6 +45,13 @@ export default function HomeScreen() {
           {publicKey}
         </Text>
       </View>
+
+      <FundButton
+        isFunding={isFunding}
+        fundError={fundError}
+        onFund={fundWallet}
+        isFunded={isFunded}
+      />
 
       <View style={styles.actionsContainer}>
         <Button 
