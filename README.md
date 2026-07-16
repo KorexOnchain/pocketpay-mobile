@@ -18,6 +18,10 @@ React Native Expo wallet for Stellar Testnet.
 
 For the expected screen sequence, validation, and UI states behind these features, see [Main wallet user flows](docs/user-flows.md).
 
+## Documentation
+
+*   [Screen Inventory](docs/screen-inventory.md) - A map of the main screens and routes in the app.
+
 ## Tech Stack
 
 React Native, Expo Router, Zustand, Stellar SDK, SecureStore, AsyncStorage
