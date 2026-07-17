@@ -8,11 +8,12 @@ import { validateAddress } from '../src/utils/validation';
 import { Trash2, User } from 'lucide-react-native';
 
 export default function ContactsScreen() {
-  const { contacts, addContact, removeContact } = useAppStore();
+  const { contacts, addContact, removeContact, findContactByPublicKey } = useAppStore();
   const [name, setName] = useState('');
   const [publicKey, setPublicKey] = useState('');
   const [nameError, setNameError] = useState<string | undefined>();
   const [keyError, setKeyError] = useState<string | undefined>();
+  const [duplicateError, setDuplicateError] = useState<string | undefined>();
   const [isAdding, setIsAdding] = useState(false);
 
   const handleNameChange = (value: string) => {
@@ -23,6 +24,7 @@ export default function ContactsScreen() {
   const handleKeyChange = (value: string) => {
     setPublicKey(value);
     setKeyError(value.trim() ? validateAddress(value) ?? undefined : undefined);
+    if (duplicateError) setDuplicateError(undefined);
   };
 
   const handleAdd = async () => {
@@ -30,8 +32,17 @@ export default function ContactsScreen() {
     const currentKeyError = validateAddress(publicKey) ?? undefined;
     setNameError(currentNameError);
     setKeyError(currentKeyError);
+    setDuplicateError(undefined);
 
     if (currentNameError || currentKeyError) {
+      return;
+    }
+
+    const existing = findContactByPublicKey(publicKey);
+    if (existing) {
+      setDuplicateError(
+        `This address is already saved as "${existing.name}". You cannot add duplicate addresses.`,
+      );
       return;
     }
 
@@ -46,6 +57,7 @@ export default function ContactsScreen() {
     setPublicKey('');
     setNameError(undefined);
     setKeyError(undefined);
+    setDuplicateError(undefined);
     setIsAdding(false);
   };
 
@@ -70,6 +82,9 @@ export default function ContactsScreen() {
             error={keyError}
             autoCapitalize="none"
           />
+          {duplicateError && (
+            <Text style={styles.duplicateWarning}>{duplicateError}</Text>
+          )}
           <View style={styles.actions}>
             <Button title="Save Contact" onPress={handleAdd} style={styles.actionBtn} />
             <Button title="Cancel" variant="outline" onPress={() => setIsAdding(false)} style={styles.actionBtn} />
@@ -171,5 +186,12 @@ const styles = StyleSheet.create({
   actionBtn: {
     flex: 1,
     marginHorizontal: SIZES.xs,
+  },
+  duplicateWarning: {
+    color: COLORS.warning,
+    fontSize: 12,
+    marginTop: SIZES.xs,
+    marginLeft: SIZES.xs,
+    marginBottom: SIZES.sm,
   }
 });
