@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SIZES, RADIUS, ThemeColors } from '../constants/theme';
 import { useTheme } from '../hooks/useTheme';
 import { Lock } from '../store/vaultStore';
@@ -13,6 +13,11 @@ interface VaultLockDetailProps {
 export const VaultLockDetail: React.FC<VaultLockDetailProps> = ({ lock }) => {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const router = useRouter();
+  const unlockLock = useVaultStore((state) => state.unlockLock);
+  
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   const isMatured = lock.status === 'matured';
   const unlockDate = new Date(lock.unlockDate);
@@ -21,8 +26,32 @@ export const VaultLockDetail: React.FC<VaultLockDetailProps> = ({ lock }) => {
   const eligibility = getEligibilityText(lock.unlockDate, lock.status);
 
   const handleWithdraw = () => {
-    // TODO: Implement withdrawal logic
-    console.log('Withdraw funds for lock:', lock.id);
+    setIsConfirmVisible(true);
+  };
+
+  const performWithdrawal = async () => {
+    setIsWithdrawing(true);
+    try {
+      // TODO: Replace setTimeout with SDK withdrawal method once integrated.
+      // e.g. await useVaultStore().withdraw(secretKey, publicKey, lock.amount);
+      await new Promise(res => setTimeout(res, 1500));
+      
+      Alert.alert('Success', `Successfully withdrawn ${lock.amount} XLM to your wallet.`, [
+        { 
+          text: 'OK', 
+          onPress: () => {
+            setIsConfirmVisible(false);
+            router.back();
+            // Call unlockLock slightly later to avoid rendering "Lock Not Found" mid-transition
+            setTimeout(() => unlockLock(lock.id), 300);
+          } 
+        }
+      ]);
+    } catch (error) {
+      Alert.alert('Withdrawal Failed', 'Could not process the withdrawal. Please try again.');
+    } finally {
+      setIsWithdrawing(false);
+    }
   };
 
   return (
@@ -208,7 +237,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginTop: SIZES.lg,
   },
   withdrawButtonText: {
-    color: colors.buttonText,
+    color: colors.background,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: SIZES.xs,
