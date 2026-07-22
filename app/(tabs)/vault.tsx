@@ -244,12 +244,18 @@ export default function VaultScreen() {
             <TouchableOpacity
               onPress={() => setLockEducationVisible(true)}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              accessibilityLabel="Learn about locked funds"
+              accessibilityRole="button"
             >
               <HelpCircle color={colors.textMuted} size={18} />
             </TouchableOpacity>
           </View>
           <Text style={styles.lockedAmount}>{lockedBalance} XLM</Text>
-          <Text style={styles.unlockTime}>Unlocks on {unlockTime}</Text>
+          <Text style={styles.unlockTime}>Available to withdraw on {unlockTime}</Text>
+          <Text style={styles.lockedCountdown}>{formatTimeRemaining(unlockTime)}</Text>
+          <Text style={styles.lockedFundsHelper}>
+            These funds are set aside and can't be withdrawn until the date above. Once that date passes, you can move them back to your wallet.
+          </Text>
         </View>
       ) : null}
 
@@ -334,7 +340,7 @@ export default function VaultScreen() {
             />
           </View>
           <AsyncActionButton
-            title="Lock Funds (30 days)"
+            title="Set Aside for 30 Days"
             variant="outline"
             onPress={() => handleAction('lock')}
             isLoading={isSubmitting && pendingAction === 'lock'}
@@ -449,6 +455,18 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   unlockTime: {
     color: colors.textSecondary,
     fontSize: 14,
+  },
+  lockedCountdown: {
+    color: colors.secondary,
+    fontSize: 13,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  lockedFundsHelper: {
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: SIZES.sm,
   },
   infoBox: {
     flexDirection: 'row',

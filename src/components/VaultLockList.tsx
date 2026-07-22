@@ -5,6 +5,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { Lock, CheckCircle, Clock } from 'lucide-react-native';
 import { Lock as LockType } from '../hooks/useVault';
+import { formatTimeRemaining } from '../utils/lockTime';
 
 interface VaultLockListProps {
   locks: LockType[];
@@ -42,15 +43,24 @@ export const VaultLockList: React.FC<VaultLockListProps> = ({
         <Lock color={colors.textMuted} size={48} style={styles.emptyIcon} />
         <Text style={styles.emptyTitle}>No locked funds</Text>
         <Text style={styles.emptySubtitle}>
-          Lock funds to see them listed here
+          Locking sets your XLM aside for a fixed period (30 days) so it can't be spent accidentally. Once the time is up you can withdraw freely.
         </Text>
+        {onInfoPress && (
+          <TouchableOpacity style={styles.emptyLearnMore} onPress={onInfoPress}>
+            <Info color={colors.primary} size={14} style={{ marginRight: 4 }} />
+            <Text style={styles.emptyLearnMoreText}>How does locking work?</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {locks.map((lock) => (
+      {locks.map((lock) => {
+        const isReady = lock.status === 'matured';
+        const countdown = !isReady ? formatTimeRemaining(lock.unlockDate) : '';
+        return (
         <TouchableOpacity key={lock.id} onPress={() => handlePress(lock.id)} style={styles.lockItem}>
           <View style={[styles.lockIconContainer, {
             backgroundColor: lock.status === 'matured' 
@@ -96,12 +106,17 @@ export const VaultLockList: React.FC<VaultLockListProps> = ({
                 </TouchableOpacity>
               )}
             </View>
+            {countdown ? (
+              <Text style={styles.countdownText}>{countdown}</Text>
+            ) : null}
           </View>
         </TouchableOpacity>
-      ))}
+        );
+      })}
       {onInfoPress && (
         <TouchableOpacity style={styles.infoButton} onPress={onInfoPress}>
-          <Text style={styles.infoButtonText}>Learn about locked funds</Text>
+          <Info color={colors.primary} size={14} style={{ marginRight: 4 }} />
+          <Text style={styles.infoButtonText}>How does locking work?</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -133,6 +148,20 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 14,
     textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: SIZES.sm,
+  },
+  emptyLearnMore: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SIZES.md,
+    paddingVertical: SIZES.xs,
+    paddingHorizontal: SIZES.md,
+  },
+  emptyLearnMoreText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '500',
   },
   lockItem: {
     flexDirection: 'row',
@@ -191,6 +220,12 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     color: colors.textMuted,
     fontSize: 14,
   },
+  countdownText: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
   unlockButton: {
     backgroundColor: colors.success,
     paddingHorizontal: SIZES.md,
@@ -204,6 +239,8 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   infoButton: {
     alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: SIZES.sm,
   },
   infoButtonText: {
